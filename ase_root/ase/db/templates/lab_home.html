@@ -193,13 +193,39 @@ MMI Lab Home
   }
 
   .resource-path {
-    margin-top: 0.6rem;
     display: inline-block;
     border: 1px solid rgba(255, 255, 255, 0.22);
     border-radius: 999px;
     padding: 0.22rem 0.6rem;
     font-size: 0.78rem;
     color: var(--text-strong);
+  }
+
+  .resource-footer {
+    margin-top: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+  }
+
+  .resource-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    border: 1px solid rgba(91, 224, 189, 0.55);
+    background: rgba(91, 224, 189, 0.13);
+    color: #dcfff4;
+    border-radius: 999px;
+    padding: 0.34rem 0.78rem;
+    font-size: 0.84rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+  }
+
+  .resource-link:hover .resource-cta {
+    background: rgba(91, 224, 189, 0.2);
   }
 
   @media (max-width: 900px) {
@@ -244,6 +270,8 @@ MMI Lab Home
       <article class="lab-card">
         <h2>Principal Investigator</h2>
         <p class="pi">Dr Qiang Zhu</p>
+        <p>Interim Director of BATT CAVE, Associate Professor</p>
+        <p>Mechanical Engineering and Engineering Science</p>
       </article>
     </div>
   </section>
@@ -259,7 +287,10 @@ MMI Lab Home
       <a class="resource-link" href="{{ project.href }}">
         <h3 class="resource-title">{{ project.title }}</h3>
         <p class="resource-summary">{{ project.summary }}</p>
-        <span class="resource-path">{{ project.href }}</span>
+        <div class="resource-footer">
+          <span class="resource-path">{{ project.href }}</span>
+          <span class="resource-cta">Open Database <span aria-hidden="true">→</span></span>
+        </div>
       </a>
       {% endfor %}
     </div>
