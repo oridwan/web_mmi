@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+{% include 'ase/db/templates/style.html' %}
+{% include 'ase/db/templates/js.html' %}
+{% block head %}
+{% endblock %}
+
+<title>{% block title %}{% endblock %}</title>
+
+  </head>
+
+  <body {% block BodySettings %}{% endblock %}>
+
+    <header class="site-header">
+      <div class="site-header-inner">
+        <a class="site-brand" href="/">MMI Database Hub</a>
+        <nav class="site-nav" aria-label="Primary">
+          <a href="/">Home</a>
+          <a href="/carbon_sp2">Carbon sp2</a>
+          <a href="/electride">Electride</a>
+        </nav>
+      </div>
+    </header>
+
+    <div class="container-fluid" style="padding: 5px;">
+      <div class="row">
+        <nav class="navbar navbar-default px-1">
+          <div class="container-fluid">
+            <ul class="nav navbar-nav navbar-right">
+              {% block navbar %} {% endblock %}
+
+            </ul>
+          </div>
+        </nav>
+      </div>
+    </div> <!--end of container-->
+
+{% block content %}
+{% endblock %}
+
+<footer class="footer">
+  {% set is_carbon = project is defined and project.name == 'carbon_sp2' %}
+  {% set is_electride = project is defined and project.name in ['electride_binary', 'electride_ternary'] %}
+  {% if is_electride %}
+    <div class="footer-container">
+      <div class="footer-section">
+        <h4>About Inorganic Electride Database</h4>
+        <p>
+          <strong>High-Throughput Computational Discovery of Inorganic Electride Materials</strong>
+        </p>
+        <p class="citation">
+          Web application for browsing electride structures from the ElectrideFlow workflow
+        </p>
+        <p class="arxiv">GitHub: <a href="https://github.com/Tack-Tau/Web4ElectrideFlow" target="_blank">Web4ElectrideFlow</a></p>
+      </div>
+
+      <div class="footer-section">
+        <h4>Contact</h4>
+        <p>
+          <strong>Research Team</strong><br>
+          Materials Modelling and Informatics Group<br>
+          <a href="https://qzhu2017.github.io" target="_blank">Group Website</a>
+        </p>
+      </div>
+
+      <div class="footer-section">
+        <h4>Database Statistics</h4>
+        <p>
+          <strong>Binary Systems:</strong> 251 structures<br>
+          <strong>Ternary Systems:</strong> 39 structures<br>
+          <strong>Total Electrides:</strong> 290 materials<br>
+          <strong>Computational Methods:</strong> DFT (VASP) and MatterSim
+        </p>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2026 Materials Modelling and Informatics Group, UNC Charlotte | Powered by <a href="https://github.com/MaterSim/ElectrideFlow" target="_blank">ElectrideFlow</a></p>
+    </div>
+  {% elif is_carbon %}
+    <div class="footer-container">
+      <div class="footer-section">
+        <h4>About LEGO-xtal</h4>
+        <p>
+          <strong>AI-Assisted Rapid Crystal Structure Generation Towards a Target Local Environment</strong>
+        </p>
+        <p class="citation">
+          Ridwan, O.G., Pitié, S., Raj, M.S. et al. (2026) npj Computational Materials
+        </p>
+        <p class="arxiv">DOI: <a href="https://doi.org/10.1038/s41524-025-01931-9" target="_blank">10.1038/s41524-025-01931-9</a></p>
+      </div>
+
+      <div class="footer-section">
+        <h4>Contact</h4>
+        <p>
+          <strong>Osman Goni Ridwan</strong><br>
+          <a href="mailto:oridwan@charlotte.edu">oridwan@charlotte.edu</a><br>
+          <a href="https://linkedin.com/in/ogridwan" target="_blank">LinkedIn</a>
+        </p>
+        <p>
+          <strong>Qiang Zhu (PI)</strong><br>
+          <a href="mailto:qzhu8@charlotte.edu">qzhu8@charlotte.edu</a><br>
+          <a href="https://qzhu2017.github.io" target="_blank">Website</a>
+        </p>
+      </div>
+
+      <div class="footer-section">
+        <h4>Research Group</h4>
+        <p>
+          <strong>Materials Modelling and Informatics (MMI)</strong><br>
+          <strong>BATT CAVE</strong><br>
+          Department of Mechanical Engineering and Engineering Science<br>
+          University of North Carolina at Charlotte
+        </p>
+      </div>
+
+      <div class="footer-section">
+        <h4>Citation</h4>
+        <pre><code>@article{ridwan2026ai,
+  title={AI-assisted rapid crystal structure generation towards a target local environment},
+  author={Ridwan, Osman Goni and Pitié, Sylvain and Raj, Monish Soundar and Dai, Dong and Frapper, Gilles and Xue, Hongfei and Zhu, Qiang},
+  journal={npj Computational Materials},
+  year={2026},
+  doi={10.1038/s41524-025-01931-9}
+}</code></pre>
+      </div>
+    </div>
+  {% else %}
+    <div class="footer-bottom">
+      <p>&copy; 2026 Materials Modelling and Informatics (MMI), UNC Charlotte</p>
+    </div>
+  {% endif %}
+</footer>
+
+</body>
+</html>
