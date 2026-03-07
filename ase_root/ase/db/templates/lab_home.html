@@ -1,0 +1,308 @@
+{% extends 'ase/db/templates/layout.html' %}
+
+{% block title %}
+MMI Lab Home
+{% endblock %}
+
+{% block head %}
+<style>
+  .lab-home {
+    max-width: 1180px;
+    margin: 0 auto 2.5rem;
+    padding: 0 1rem 1rem;
+  }
+
+  .lab-hero {
+    background: linear-gradient(150deg, rgba(15, 33, 60, 0.97), rgba(10, 18, 36, 0.95));
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.25rem;
+    box-shadow: 0 20px 45px rgba(0, 0, 0, 0.28);
+    margin-bottom: 0.9rem;
+  }
+
+  .lab-hero-top {
+    display: grid;
+    grid-template-columns: 84px 1fr;
+    gap: 0.9rem;
+    align-items: center;
+    margin-bottom: 0.8rem;
+  }
+
+  .lab-logo {
+    width: 84px;
+    height: 84px;
+    object-fit: contain;
+    border-radius: 10px;
+    background: #fff;
+    padding: 0.3rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  .lab-unit {
+    margin: 0;
+    font-size: 0.78rem;
+    color: var(--accent);
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    font-weight: 700;
+  }
+
+  .lab-title {
+    margin: 0.2rem 0 0;
+    font-size: clamp(1.5rem, 2.7vw, 2.1rem);
+    color: var(--text-strong);
+  }
+
+  .lab-subtitle {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.95rem;
+  }
+
+  .lab-grid {
+    display: grid;
+    grid-template-columns: 1.45fr 1fr;
+    gap: 0.85rem;
+  }
+
+  .lab-card {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.02);
+    padding: 0.95rem;
+  }
+
+  .lab-card h2 {
+    margin: 0 0 0.55rem;
+    font-size: 1.03rem;
+    color: var(--text-strong);
+  }
+
+  .lab-card p {
+    margin: 0;
+    color: var(--muted);
+    line-height: 1.62;
+    font-size: 0.95rem;
+  }
+
+  .lab-card .pi {
+    margin-top: 0.5rem;
+    display: inline-block;
+    color: var(--text-strong);
+    font-weight: 600;
+  }
+
+  .resource-section {
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: rgba(12, 25, 45, 0.76);
+    padding: 1rem;
+  }
+
+  .contact-strip {
+    margin-top: 0.9rem;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.02);
+    padding: 0.85rem 0.95rem;
+  }
+
+  .contact-strip h2 {
+    margin: 0 0 0.45rem;
+    font-size: 1rem;
+    color: var(--text-strong);
+  }
+
+  .contact-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 0.32rem;
+  }
+
+  .contact-list li {
+    color: var(--muted);
+    font-size: 0.93rem;
+  }
+
+  .contact-list strong {
+    color: var(--text-strong);
+  }
+
+  .contact-list a {
+    color: var(--accent);
+    text-decoration: none;
+  }
+
+  .contact-list a:hover {
+    text-decoration: underline;
+  }
+
+  .resource-head {
+    margin-bottom: 0.75rem;
+  }
+
+  .resource-head h2 {
+    margin: 0;
+    font-size: 1.12rem;
+    color: var(--text-strong);
+  }
+
+  .resource-head p {
+    margin: 0.25rem 0 0;
+    color: var(--muted);
+    font-size: 0.92rem;
+  }
+
+  .resource-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 0.8rem;
+  }
+
+  .resource-link {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: linear-gradient(160deg, rgba(15, 33, 60, 0.88), rgba(12, 25, 45, 0.98));
+    padding: 0.9rem;
+    transition: border-color 0.2s ease, transform 0.2s ease;
+  }
+
+  .resource-link:hover {
+    border-color: rgba(91, 224, 189, 0.42);
+    transform: translateY(-2px);
+    color: inherit;
+  }
+
+  .resource-title {
+    margin: 0 0 0.35rem;
+    font-size: 1rem;
+    color: var(--text-strong);
+  }
+
+  .resource-summary {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.92rem;
+    line-height: 1.55;
+  }
+
+  .resource-path {
+    display: inline-block;
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    border-radius: 999px;
+    padding: 0.22rem 0.6rem;
+    font-size: 0.78rem;
+    color: var(--text-strong);
+  }
+
+  .resource-footer {
+    margin-top: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+  }
+
+  .resource-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    border: 1px solid rgba(91, 224, 189, 0.55);
+    background: rgba(91, 224, 189, 0.13);
+    color: #dcfff4;
+    border-radius: 999px;
+    padding: 0.34rem 0.78rem;
+    font-size: 0.84rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+  }
+
+  .resource-link:hover .resource-cta {
+    background: rgba(91, 224, 189, 0.2);
+  }
+
+  @media (max-width: 900px) {
+    .lab-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .lab-hero-top {
+      grid-template-columns: 70px 1fr;
+    }
+
+    .lab-logo {
+      width: 70px;
+      height: 70px;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="lab-home">
+  <section class="lab-hero">
+    <div class="lab-hero-top">
+      <img class="lab-logo" src="{{ url_for('static', filename='uncc.webp') }}" alt="UNC Charlotte logo">
+      <div>
+        <p class="lab-unit">University of North Carolina at Charlotte</p>
+        <h1 class="lab-title">Materials Modelling and Informatics (MMI) Lab</h1>
+        <p class="lab-subtitle">Computational materials research and database infrastructure</p>
+      </div>
+    </div>
+
+    <div class="lab-grid">
+      <article class="lab-card">
+        <h2>About the Lab</h2>
+        <p>
+          The MMI Lab at UNC Charlotte develops computational approaches for materials discovery,
+          with emphasis on data-driven modeling, high-throughput screening, and crystal-structure analysis.
+          This site serves as the group portal for searchable research datasets and publications.
+        </p>
+      </article>
+
+      <article class="lab-card">
+        <h2>Principal Investigator</h2>
+        <p class="pi">Dr Qiang Zhu</p>
+        <p>Interim Director of BATT CAVE, Associate Professor</p>
+        <p>Mechanical Engineering and Engineering Science</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="resource-section">
+    <div class="resource-head">
+      <h2>Research Databases</h2>
+      <p>Access actively maintained databases for browsing, querying, and structure visualization.</p>
+    </div>
+
+    <div class="resource-grid">
+      {% for project in projects %}
+      <a class="resource-link" href="{{ project.href }}">
+        <h3 class="resource-title">{{ project.title }}</h3>
+        <p class="resource-summary">{{ project.summary }}</p>
+        <div class="resource-footer">
+          <span class="resource-path">{{ project.href }}</span>
+          <span class="resource-cta">Open Database <span aria-hidden="true">→</span></span>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="contact-strip">
+    <h2>Contact</h2>
+    <ul class="contact-list">
+      <li><strong>Qiang Zhu (PI)</strong> - <a href="mailto:qzhu8@charlotte.edu">qzhu8@charlotte.edu</a></li>
+      <li><strong>Osman Goni Ridwan (PhD Candidate)</strong> - <a href="mailto:oridwan@charlotte.edu">oridwan@charlotte.edu</a></li>
+      <li><strong>Shuo Tao (Post doc)</strong> - <a href="mailto:stao4@charlotte.edu">stao4@charlotte.edu</a></li>
+    </ul>
+  </section>
+</div>
+{% endblock %}

@@ -1,0 +1,438 @@
+{% extends 'ase/db/templates/layout.html' %}
+
+{% block title %}
+Browse ASE Database
+{% endblock %}
+
+{% block head %}
+<script src="{{ url_for('static', filename='search.js') }}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const sessionId = {{ session_id }};
+  const projectName = '{{ project.name }}';
+  const isCarbon = projectName === 'carbon_sp2';
+  const isElectride = projectName === 'electride_binary' || projectName === 'electride_ternary';
+
+  if (isElectride) {
+    document.body.classList.add('electride-theme');
+
+    const binaryButton = document.getElementById('db-binary');
+    const ternaryButton = document.getElementById('db-ternary');
+
+    if (projectName === 'electride_binary' && binaryButton) {
+      binaryButton.classList.add('active');
+    }
+    if (projectName === 'electride_ternary' && ternaryButton) {
+      ternaryButton.classList.add('active');
+    }
+  }
+
+  const runSearch = function() {
+    update_table(sessionId, 'query', '0');
+  };
+
+  window.handleSearch = function() {
+    if (!isElectride) {
+      runSearch();
+      return;
+    }
+
+    let query = document.getElementById('formula-result').value.trim();
+
+    const chemsysQueryPattern = /^chemsys=([A-Z][a-z]?(?:-[A-Z][a-z]?)+|\*|-?\*)$/i;
+    const chemsysQueryMatch = query.match(chemsysQueryPattern);
+
+    if (chemsysQueryMatch) {
+      const chemsysValue = chemsysQueryMatch[1];
+
+      if (chemsysValue.includes('*')) {
+        runSearch();
+        return;
+      }
+
+      const elements = chemsysValue.split('-').filter(function(e) { return e.length > 0; }).sort();
+      const canonicalChemsys = elements.join('-');
+      const numElements = elements.length;
+      query = 'chemsys=' + canonicalChemsys;
+      document.getElementById('formula-result').value = query;
+
+      if (numElements === 2) {
+        window.location.href = '/electride/binary/?query=' + encodeURIComponent(query);
+      } else if (numElements === 3) {
+        window.location.href = '/electride/ternary/?query=' + encodeURIComponent(query);
+      } else {
+        runSearch();
+      }
+      return;
+    }
+
+    const chemsysPattern = /^([A-Z][a-z]?)-([A-Z][a-z]?)(-([A-Z][a-z]?))?$/;
+    const match = query.match(chemsysPattern);
+
+    if (match) {
+      const elements = query.split('-').filter(function(e) { return e.length > 0; }).sort();
+      const canonicalChemsys = elements.join('-');
+      const numElements = elements.length;
+      const chemsysQuery = 'chemsys=' + canonicalChemsys;
+
+      if (numElements === 2) {
+        window.location.href = '/electride/binary/?query=' + encodeURIComponent(chemsysQuery);
+      } else if (numElements === 3) {
+        window.location.href = '/electride/ternary/?query=' + encodeURIComponent(chemsysQuery);
+      } else {
+        runSearch();
+      }
+      return;
+    }
+
+    runSearch();
+  };
+
+  runSearch();
+
+  const quickButtons = document.querySelectorAll('[data-query-value]');
+  const queryInput = document.getElementById('formula-result');
+
+  quickButtons.forEach(function(button) {
+    button.addEventListener('click', function() {
+      queryInput.value = this.getAttribute('data-query-value');
+      handleSearch();
+    });
+  });
+}, false);
+</script>
+{% endblock %}
+
+{% block content %}
+
+<div class="page-shell">
+  <div class="container py-4">
+    {% set is_carbon = project.name == 'carbon_sp2' %}
+    {% set is_electride = project.name in ['electride_binary', 'electride_ternary'] %}
+    {% set project_title = project.name.replace('_', ' ')|title %}
+
+    <div class="row g-4 align-items-stretch">
+      <div class="col-lg-7">
+        <div class="hero-panel h-100">
+          {% if is_electride %}
+            <p class="eyebrow mb-2">High-Throughput Computational Materials Discovery</p>
+            <h1 class="display-5 mb-3">Inorganic Electride Database</h1>
+
+            <p class="lede mb-3">
+              <strong>ElectrideFlow:</strong> An accelerated materials discovery framework combining diffusion-based generative models
+              with hierarchical thermodynamic and electronic structure screening to identify <strong>290 new electron-rich electride compounds</strong>,
+              including 13 thermodynamically stable electrides.
+            </p>
+
+            <div class="achievement-block mb-4">
+              <div class="achievement-row">
+                <span class="achievement-badge">290 Structures</span>
+                <span class="achievement-badge">251 Binary + 39 Ternary</span>
+                <span class="achievement-badge">264 Within 0.05 E<sub>hull-DFT</sub></span>
+                <span class="achievement-badge">13 Thermodynamically Stable</span>
+                <span class="achievement-badge">arXiv: 2601.21077</span>
+              </div>
+              <p class="achievement-info mt-2">
+                Materials Modelling &amp; Informatics Group (MMI) | <strong>UNC Charlotte</strong>
+              </p>
+            </div>
+          {% elif is_carbon %}
+            <p class="eyebrow mb-2">AI-Assisted Crystal Structure Generation</p>
+            <h1 class="display-5 mb-3">LEGO-xtal</h1>
+            <p class="lede mb-3">
+              <strong>Local Environment Geometry-Oriented Crystal Generator</strong> - A symmetry-informed AI generative approach
+              that expands carbon allotropes from 25 known structures to <strong>1,700+ low-energy candidates</strong> optimized
+              with machine learning descriptors.
+            </p>
+
+            <div class="achievement-block mb-4">
+              <div class="achievement-row">
+                <span class="achievement-badge">1,700+ Structures</span>
+                <span class="achievement-badge">Within 0.5 eV/atom</span>
+                <span class="achievement-badge">DOI: 10.1038/s41524-025-01931-9</span>
+              </div>
+              <p class="achievement-info mt-2">
+                Developed by <strong>OG Ridwan</strong>, led by <strong>Prof. Qiang Zhu</strong> | Materials Modelling &amp; Informatics Group (MMI) |
+                <strong>UNC Charlotte</strong>
+              </p>
+            </div>
+          {% else %}
+            <p class="eyebrow mb-2">MMI Database Explorer</p>
+            <h1 class="display-5 mb-3">{{ project_title }}</h1>
+            <p class="lede mb-3">
+              Browse records, run filters, and inspect atomic structures from the {{ project_title }} dataset.
+            </p>
+          {% endif %}
+
+          <div class="row g-3 mt-2">
+            <div class="col-md-4">
+              <div class="stat-card">
+                <h3>Search</h3>
+                {% if is_electride %}
+                  <p>Browse electrides by formula, space group, energy above hull, or N_excess.</p>
+                {% else %}
+                  <p>Formulae, space group, topology, or energy ranges.</p>
+                {% endif %}
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="stat-card">
+                {% if is_electride %}
+                  <h3>Visualize</h3>
+                  <p>Interactive 3D structures with JSmol and detailed metadata inspection.</p>
+                {% else %}
+                  <h3>Compare</h3>
+                  <p>Line up MACE, FF, and VASP energies per structure.</p>
+                {% endif %}
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="stat-card">
+                {% if is_electride %}
+                  <h3>Analyze</h3>
+                  <p>Compare DFT and MatterSim energies, band gaps, and thermodynamic stability.</p>
+                {% else %}
+                  <h3>Inspect</h3>
+                  <p>Open a row to view geometry and metadata instantly.</p>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-5">
+        <div class="search-card">
+          {% if is_electride %}
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <div>
+                <h4 class="mb-1">Search the database</h4>
+                <p class="mb-0" style="color: var(--muted); font-size: 0.9rem;">Toggle between binary and ternary systems, or query by keys</p>
+              </div>
+              <div class="btn-group btn-group-sm db-switcher" role="group" aria-label="Database selector">
+                <button type="button" class="btn btn-outline-primary" id="db-binary" onclick="window.location.href='/electride/binary/'">Binary</button>
+                <button type="button" class="btn btn-outline-primary" id="db-ternary" onclick="window.location.href='/electride/ternary/'">Ternary</button>
+              </div>
+            </div>
+          {% else %}
+            <h4 class="mb-1">Search the database</h4>
+            <p class="mb-2" style="color: var(--muted);">Type a formula, key=value pair, or a boolean expression.</p>
+          {% endif %}
+
+          <form id="mainFormID" class="mt-2" role="search"
+                action="javascript:handleSearch()">
+            <label for="formula-result" class="form-label text-uppercase small" style="letter-spacing:0.08em; color: var(--muted);">Query</label>
+            <div class="d-flex gap-2 align-items-stretch">
+              <input type="text" name="query" id="formula-result"
+                     class="form-control ase-input search-input-lg w-100"
+                     value="{{ q }}"
+                     placeholder="{% if is_electride %}Ca-P, K-B-O, or full_dft_e_hull<0.05{% elif is_carbon %}space_group_number=191 AND topology=hcb{% else %}key=value AND other_key>0{% endif %}">
+              <button type="submit" class="btn btn-primary flex-shrink-0">Search</button>
+            </div>
+
+            {% block search %}
+            {% endblock search %}
+
+            {% if is_electride %}
+              <div class="quick-filters mt-3">
+                <button type="button" class="btn btn-outline-light btn-sm" data-query-value="electride=True">Electrides Only</button>
+                <button type="button" class="btn btn-outline-light btn-sm" data-query-value="full_dft_e_hull<0.05">Thermodynamically Stable</button>
+                <button type="button" class="btn btn-outline-light btn-sm" data-query-value="N_excess>0">Excess Electrons</button>
+                <button type="button" class="btn btn-outline-light btn-sm" data-query-value="band_gap>0">Semiconducting</button>
+              </div>
+            {% elif is_carbon %}
+              <div class="quick-filters mt-3">
+                <button type="button" class="btn btn-outline-light btn-sm" data-query-value="topology=hcb">Graphene-like (hcb)</button>
+                <button type="button" class="btn btn-outline-light btn-sm" data-query-value="space_group_number=191">Space group 191</button>
+                <button type="button" class="btn btn-outline-light btn-sm" data-query-value="mace_energy<-9.3">Lower MACE energy</button>
+                <button type="button" class="btn btn-outline-light btn-sm" data-query-value="vasp_energy<-7">With VASP energy</button>
+              </div>
+            {% endif %}
+
+            {% with messages = get_flashed_messages() %}
+              {% if messages %}
+                <ul class="list-group mt-3">
+                {% for message in messages %}
+                  <li class="list-group-item list-group-item-warning">{{ message }}</li>
+                {% endfor %}
+                </ul>
+              {% endif %}
+            {% endwith %}
+
+          </form>
+        </div>
+
+        <div class="info-card mt-3">
+          <div class="d-flex justify-content-between align-items-center">
+            <span>Need syntax reminders?</span>
+            <a class="small" href="https://wiki.fysik.dtu.dk/ase/ase/db/db.html#querying" target="_blank" rel="noreferrer">Query help</a>
+          </div>
+
+          <small class="form-text mt-2">
+            <a data-bs-toggle="collapse" role="button" href="#collapse1" aria-controls="collapse1">Toggle list of keys</a>
+          </small>
+          <div id="collapse1" class="collapse mt-2">
+            <table class="table table-striped">
+            {% for key, keydesc in project.key_descriptions|dictsort %}
+              <tr><td>{{ key }}</td><td>{{ keydesc.longdesc }}</td><td>{{ keydesc.unit|safe }}</td></tr>
+            {% endfor %}
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="database-wrapper" id="database1"></div>
+
+    {% if is_electride %}
+      <section class="about-section mt-5">
+        <div class="about-container">
+          <h2>ElectrideFlow - High-Throughput Inorganic Electride Discovery Workflow</h2>
+          <p class="about-intro">
+            <strong>Accelerated by Generative Models and Hierarchical Prescreening:</strong>
+            A four-stage intelligent workflow for high-throughput inorganic electride discovery.
+          </p>
+
+          <div class="workflow-stages mt-4">
+            <div class="stage-card mb-3">
+              <div class="stage-header">
+                <span class="stage-label">Stage (a)</span>
+                <h4>Chemical Exploration</h4>
+              </div>
+              <p>
+                Generative AI models (MatterGen) explore electron-rich composition space with excess valence electrons
+                (0 &lt; N<sub>excess</sub> &le; 4) from electropositive alkaline, alkaline-earth, and early transition metals.
+              </p>
+            </div>
+
+            <div class="stage-card mb-3">
+              <div class="stage-header">
+                <span class="stage-label">Stage (b)</span>
+                <h4>Stability Screening</h4>
+              </div>
+              <p>
+                MatterSim (MLP) pre-screening filters structures by energy above hull to identify thermodynamically
+                promising candidates (E<sub>ref-hull-MLP</sub> &lt; 0.10 eV/atom).
+              </p>
+            </div>
+
+            <div class="stage-card mb-3">
+              <div class="stage-header">
+                <span class="stage-label">Stage (c)</span>
+                <h4>Electride Identification</h4>
+              </div>
+              <p>
+                Coarse DFT relaxation with ELF and PARCHG topological analysis to identify electride candidates
+                with localized interstitial electrons (Bader volume &gt; 20 A^3).
+              </p>
+            </div>
+
+            <div class="stage-card mb-3">
+              <div class="stage-header">
+                <span class="stage-label">Stage (d)</span>
+                <h4>Refinement &amp; Validation</h4>
+              </div>
+              <p>
+                Tight DFT relaxation with refined convex hull analysis for final candidate validation,
+                identifying thermodynamically stable electrides (E<sub>hull-DFT</sub> &lt; 0.05 eV/atom).
+              </p>
+            </div>
+          </div>
+
+          <div class="highlights row g-3 mt-4">
+            <div class="col-md-6 col-lg-3">
+              <div class="highlight-card">
+                <h3>290 Structures</h3>
+                <p>251 binary and 39 ternary compounds in this release</p>
+              </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+              <div class="highlight-card">
+                <h3>AI-Generated</h3>
+                <p>Diffusion-based generative models for targeted materials discovery</p>
+              </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+              <div class="highlight-card">
+                <h3>DFT Validated</h3>
+                <p>Final stability validation with VASP calculations and hull screening</p>
+              </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+              <div class="highlight-card">
+                <h3>Chemical Space</h3>
+                <p>Broad exploration of electropositive binary and ternary systems</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="publication mt-4">
+            <h4>Publication</h4>
+            <p class="mb-2">
+              <strong>Accelerated Inorganic Electrides Discovery by Generative Models and Hierarchical Screening</strong><br>
+              <small>Shuo Tao, Qiang Zhu</small><br>
+              <small><em>arXiv:2601.21077 (2026)</em></small>
+            </p>
+          </div>
+          <div class="mt-2">
+            <a href="https://arxiv.org/abs/2601.21077" target="_blank" class="arxiv-link">View on arXiv -></a>
+            <span class="ms-2"><a href="https://github.com/Tack-Tau/Web4ElectrideFlow" target="_blank" class="arxiv-link">GitHub Repository</a></span>
+          </div>
+        </div>
+      </section>
+    {% elif is_carbon %}
+      <section class="about-section mt-5">
+        <div class="about-container">
+          <h2>About LEGO-xtal</h2>
+          <p class="about-intro">
+            LEGO-xtal (Local Environment Geometry-Oriented Crystal Generator) is a symmetry-informed AI generative approach
+            for crystal structure prediction. Our method generates diverse crystal structures using machine learning and
+            optimizes them using structure descriptors rather than traditional energy minimization.
+          </p>
+
+          <div class="highlights row g-3 mt-4">
+            <div class="col-md-6 col-lg-3">
+              <div class="highlight-card">
+                <h3>1,700+ Structures</h3>
+                <p>Expanded from 25 known sp2 carbon allotropes to over 1,700 low-energy candidates</p>
+              </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+              <div class="highlight-card">
+                <h3>AI-Powered</h3>
+                <p>Symmetry-informed generative models trained on augmented datasets</p>
+              </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+              <div class="highlight-card">
+                <h3>ML Optimization</h3>
+                <p>Optimized within 0.5 eV/atom of graphite ground state</p>
+              </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+              <div class="highlight-card">
+                <h3>Generalizable</h3>
+                <p>Adaptable to MOFs, battery materials, and modular building blocks</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="publication mt-4">
+            <h4>Publication</h4>
+            <p class="mb-2">
+              <strong>AI-assisted rapid crystal structure generation towards a target local environment</strong><br>
+              <small>Ridwan, O.G., Pitie, S., Raj, M.S., Dai, D., Frapper, G., Xue, H., Zhu, Q.</small><br>
+              <small><em>npj Computational Materials (2026)</em></small>
+            </p>
+          </div>
+          <div class="mt-2">
+            <a href="https://doi.org/10.1038/s41524-025-01931-9" target="_blank" class="arxiv-link">View at npj Computational Materials -></a>
+          </div>
+        </div>
+      </section>
+    {% endif %}
+
+  </div>
+</div>
+
+{% endblock content %}
